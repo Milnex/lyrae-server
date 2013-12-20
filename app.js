@@ -37,7 +37,7 @@ db.once('open', function () {
 });
 
 
-app.get('/', routes.index);
+//app.get('/', routes.index);
 //app.get('/users', user.list);
 
 /*
