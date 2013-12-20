@@ -217,7 +217,7 @@ app.get('/match/:uid', function(req, res) {
 			model.Group.create({users: uids}, function (err, group) {
 				if (err) return callback(err);
 
-				callback(null, [{status: 'success'}]);
+				callback(null, [{gid: group._id}]);
 			});
 		}
 	];
@@ -227,7 +227,7 @@ app.get('/match/:uid', function(req, res) {
 		if (err) return handler(err);
 
 		if (group)
-			return handler(null, [group._id]);
+			return handler(null, [{gid: group._id}]);
 		async.waterfall(tasks, handler);
 	});
 });
