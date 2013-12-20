@@ -185,6 +185,8 @@ app.get('/match/:uid', function(req, res) {
 			model.User.findOne({uid: uid}, callback);
 		}
 	,	function findUsersByActivityAndMatching (user, callback) {
+			if (!user)
+				return callback('Invalid uid - non exist: ' + uid);
 			var activity = user.activity;
 
 			console.log('activity='+activity);
