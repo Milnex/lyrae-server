@@ -123,7 +123,7 @@ app.post('/user/:uid', function(req, res) {
 	var lng = req.body.longitude;
 	var lat = req.body.latitude;
 	var activity = req.body.activity;
-	var matching = sanitize(req.body.matching).toBoolean();
+	var matching = req.body.matching;
 
 	async.series([
 	    function (callback) {
@@ -159,6 +159,7 @@ app.post('/user/:uid', function(req, res) {
 			if (!validator(matching).notNull())
 				return callback(null, {status: 'success'});
 
+			matching = sanitize(matching).toBoolean();
 			console.log('matching='+matching);
 			model.User.update({uid: uid}, {matching: matching}, function (err, count, raw) {
 				if (err) return callback(err);
