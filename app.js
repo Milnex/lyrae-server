@@ -137,7 +137,7 @@ app.post('/user/:uid', function(req, res) {
 			if (!((lng && validator(lng).notNull()) && (lat && validator(lat).notNull())))
 				return callback(null, {status: 'success'});
 
-			console.log('lng=' + lng + '&lat=' + lat);
+			console.log('longitude=' + lng + '&latitude=' + lat);
 			model.User.update({uid: uid}, {location: {longitude: lng, latitude: lat}}, function (err, count, raw) {
 				if (err) return callback(err);
 
