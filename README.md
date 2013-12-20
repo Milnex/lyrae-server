@@ -18,8 +18,8 @@ API Server powered by Node.js
 ## POST /user/:id ##
 **Modify an user attribute given :id**   
 
-    lng=<longitude>   
-    lat=<latitude>   
+    longitude=<longitude>   
+    latitude=<latitude>   
     activity=<activity>   
     matching=<if request a matching: boolean>   
     

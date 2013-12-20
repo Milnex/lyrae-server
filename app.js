@@ -2,6 +2,7 @@ var express = require('express')
 ,	mongoose = require('mongoose')
 ,   http = require('http')
 ,   path = require('path')
+,   async = require('async')
 ,   validator = require('validator').check
 ,   sanitize = require('validator').sanitize
 ,   config = require('./config')
@@ -47,16 +48,24 @@ app.get('/', function() {
 */
 
 
+var renderResults = function(req, res) {
+	return function(err, results) {
+		if (err) return res.send({status: '[Error] ' + err});
+
+		res.send(results[0]);
+	};
+}
+
 /*
 GET /users
 */
 app.get('/users', function(req, res) {
-	model.User.find(function(err, users) {
-		if (err) return res.send({status: err});
-
-		console.log('[GET] /users');
-		res.send(users);
-	});
+	async.series([
+		function (callback) {
+			console.log('[GET] /users');
+			model.User.find(callback);
+		}
+	], renderResults(req, res));
 });
 
 /*
@@ -64,18 +73,15 @@ GET /user/:id
 */
 app.get('/user/:id', function(req, res) {
 	var uid = req.params.id;
-	if (validator(uid).notNull() && validator(uid).notEmpty()) {
-		//
-		model.User.findOne({uid: uid}, function(err, user) {
-			if (err) return res.send({status: err});
+	async.series([
+		function (callback) {
+			if (!(validator(uid).notNull() && validator(uid).notEmpty())) 
+				callback('Invalid uid - null or empty:' + uid);
 
-			console.log('[GET] /user/' + uid + ': ' + user);
-			res.send(user);
-		});
-	}
-	else {
-		res.send({status: 'error'});
-	}
+			console.log('[GET] /user/' + uid);
+			model.User.findOne({uid: uid}, '-_id -__v', callback);
+		}
+	], renderResults(req, res));
 });
 
 
@@ -85,94 +91,171 @@ id=<uid>
 name=<name>
 */
 app.post('/user', function(req, res) {
-	/* if login */
+	/* TODO: if login */
 	var uid = req.body.id;
 	var name = req.body.name;
-	if (validator(uid).notNull() && validator(uid).notEmpty() && validator(name).notNull() && validator(name).notEmpty()) {
-		model.User.create({uid: uid, name: name}, function(err, user) {
-			if (err) return res.send({status: err});
+	async.series([ 
+	    function(callback) {
+			if (!(validator(uid).notNull() && validator(uid).notEmpty()))
+				callback('Invalid uid - null or empty: ' + uid);
+			if (!(validator(name).notNull() && validator(name).notEmpty()))
+				callback('Invalid name - null or empty: ' + name);
 
-			console.log('[POST] /user: ' + uid);
-			res.send({status: 'success'});
-		});
-	}
-	else
-		res.send({status: 'error'});
+			console.log('[POST] /user: id=' + uid + '&name=' + name);
+			model.User.create({uid: uid, name: name}, function(err, user) {
+				if (err) return callback(err);
+
+				callback(null, {status: 'success'});
+			});
+		}
+	], renderResults(req, res));
 });
 
 /*
 POST /user/:id
-lng=<longitude>
-lat=<latitude>
+longitude=<longitude>
+latitude=<latitude>
 activity=<activity>
 matching=<match>
 */
 app.post('/user/:id', function(req, res) {
 	var uid = req.params.id;
-	var lng = req.body.lng;
-	var lat = req.body.lat;
+	var lng = req.body.longitude;
+	var lat = req.body.latitude;
 	var activity = req.body.activity;
 	var matching = sanitize(req.body.matching).toBoolean();
 
-	if (validator(uid).notNull() && validator(uid).notEmpty()) {
-		if (lng && validator(lng).notNull() && lat && validator(lat).notNull()) {
-			model.User.update({uid: uid}, {location: {lng: lng, lat: lat}}, {upsert: true}, function (err, count, raw) {
-				if (err) return res.send({status: err});
+	async.series([
+	    function (callback) {
+			if (!(validator(uid).notNull() && validator(uid).notEmpty()))
+				return callback('Invalid uid - null or empty: ' + uid);
 
-				res.send({status: 'success'});
+			console.log('[POST] /user/' + uid + ': ');
+			callback(null, {status: 'success'});
+	    }
+	,	function (callback) {
+			if (!((lng && validator(lng).notNull()) && (lat && validator(lat).notNull())))
+				return callback(null, {status: 'success'});
+
+			console.log('lng=' + lng + '&lat=' + lat);
+			model.User.update({uid: uid}, {location: {longitude: lng, latitude: lat}}, function (err, count, raw) {
+				if (err) return callback(err);
+
+				callback(null, {status: 'success'});
 			});
 		}
-		if (activity && validator(activity).notNull()) {
-			model.User.update({uid: uid}, {activity: activity}, {upsert: true}, function (err, count, raw) {
-				if (err) return res.send({status: err});
+	,   function (callback) {
+			if (!(activity && validator(activity).notNull()))
+				return callback(null, {status: 'success'});
 
-				res.send({status: 'success'});
+			console.log('activity='+activity);
+			model.User.update({uid: uid}, {activity: activity}, function (err, count, raw) {
+				if (err) return callback(err);
+
+				callback(null, {status: 'success'});
 			});
 		}
-		if (validator(matching).notNull()) {
-			model.User.update({uid: uid}, {matching: matching}, {upsert: true}, function (err, count, raw) {
-				if (err) return res.send({status: err});
+	,	function (callback) {
+			if (!validator(matching).notNull())
+				return callback(null, {status: 'success'});
 
-				res.send({status: 'success'});
+			console.log('matching='+matching);
+			model.User.update({uid: uid}, {matching: matching}, function (err, count, raw) {
+				if (err) return callback(err);
+
+				callback(null, {status: 'success'});
 			});
 		}
-	}
-	else
-		res.send({status: 'error'});
+	], renderResults(req, res));
 });
 
 app.get('/match/:id', function(req, res) {
 	var uid = req.params.id;
-	if (validator(uid).notNull() && validator(uid).notEmpty()) {
-		model.User.findOne({uid: uid}, function (err, user) {
-			if (err) return res.send({status: err});
 
+	var handler = renderResults(req, res);
+
+	if (!(validator(uid).notNull() && validator(uid).notEmpty()))
+		return handler('Invalid uid - null or empty: ' + uid);
+
+	console.log('[GET] /match/' + uid + ': ');
+
+	var tasks = [
+		function findUserById(callback) {
+
+			model.User.findOne({uid: uid}, callback);
+		}
+	,	function findUsersByActivityAndMatching (user, callback) {
 			var activity = user.activity;
-			model.User.find({activity: activity, matching: true, uid: {$ne: uid}}, function (err, users) {
-				if (err) return res.send({status: err});
 
-				console.log('[GET] /match/' + uid + ' activity=' + activity + ': ' + users);
-				res.send(users);
+			console.log('activity='+activity);
+			model.User.find({activity: activity, matching: true/*, uid: {$ne: uid}*/}, 'uid -_id', callback);
+		}
+	, 	function retrieveUidsAndMark (users, callback) {
+			console.log('users='+ JSON.stringify(users));
+
+			var tasks = [];
+			var uids = [];
+			async.each(users, function(user, end) {
+				console.log('Query uid: ' + user.uid);
+				uids.push(user.uid);
+				model.User.findOneAndUpdate({uid: user.uid}, {matching: false}, function (err, U) {
+					if (err) return end(err);
+				});
+				end(null);
+			}, function (err) {
+				if (err) callback(err);
 			});
-		});
-	}
-	else {
-		res.send({status: 'error'});
-	}
+
+			callback(null, uids);
+		}
+	,   function createGroup (uids, callback) {
+			if (uids.length === 0)
+				return callback('Mis-match');
+			// create a new group given a list of matched user
+			model.Group.create({users: uids}, function (err, group) {
+				if (err) return callback(err);
+
+				callback(null, [{status: 'success'}]);
+			});
+		}
+	];
+
+	// check if uid already exists in a group
+	model.Group.findOne({users: {$in: [uid]}}, function (err, group) {
+		if (err) return handler(err);
+
+		if (group)
+			return handler(null, [group._id]);
+		async.waterfall(tasks, handler);
+	});
 });
 
 app.get('/group/:id', function(req, res) {
 	var gid = req.params.id;
-	if (validator(gid).notNull() && validator(gid).notEmpty()) {
-		model.Group.findOne({gid: gid}, function(err, group) {
-			if (err) return res.send({status: err});
-			console.log('[GET] /group/' + gid);
-			res.send(group);
-		});
-	}
-	else {
-		res.send({status: 'error'});
-	}
+
+	var handler = renderResults(req, res);
+	if (!(validator(gid).notNull() && validator(gid).notEmpty()))
+		return handler('Invalid gid - null or empty: ' + gid);
+
+	console.log('[GET] /group/' + gid);
+
+	async.waterfall([
+		function findGroup(callback) {
+			// TODO: might be error using string to query ObjectId
+			model.Group.findOne({_id: gid}, function (err, group) {
+				if (err) return callback(err);
+				if (!group) return callback('Invalid gid - not exist');
+				callback(null, group);
+			});
+		}
+	,	function findAllUsersInGroup(group, callback) {
+			model.User.find({uid: {$in: group.users}}, '-__v -_id', function (err, users) {
+				if (err) return callback(err);
+
+				callback(null, [users]);
+			});
+		}
+    ], handler);
 });
 
 http.createServer(app).listen(app.get('port'), function(){

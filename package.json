@@ -9,7 +9,8 @@
     "express": "3.4.0",
     "jade": "*",
     "mongoose": "latest",
-    "validator": "latest"
+    "validator": "latest",
+    "async": "latest"
   },
   "readmeFilename": "README.md",
   "description": "Project Lyrae API Server powered by Node.js",
