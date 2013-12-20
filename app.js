@@ -156,7 +156,7 @@ app.post('/user/:uid', function(req, res) {
 			});
 		}
 	,	function (callback) {
-			if (!validator(matching).notNull())
+			if (!(matching && validator(matching).notNull()))
 				return callback(null, {status: 'success'});
 
 			matching = sanitize(matching).toBoolean();
