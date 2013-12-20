@@ -3,6 +3,19 @@ Project Lyrae
 API Server powered by Node.js   
 
 
+## Dependencies ##
+
+    apt-get install node mongodb
+
+## Installation ##
+
+    cd lyrae-server
+    npm install
+
+## Execution ##
+
+    node app.js
+
 ## GET /users ##
 **List all users**   
 
