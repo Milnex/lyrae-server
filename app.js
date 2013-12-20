@@ -235,6 +235,7 @@ app.get('/match/:uid', function(req, res) {
 		if (group) {
 			console.log('Group ' + group._id + ' contains ' + uid);
 			//return handler(null, [{gid: group._id}]);
+			/*
 			async.series([
 				function removeUserFromGroup (callback) {
 					model.Group.findOneAndUpdate({_id: group._id}, {$pull: {users: uid}}, function (err, group){
@@ -253,6 +254,7 @@ app.get('/match/:uid', function(req, res) {
 					});
 				}
             ]);
+			*/
 		}
 		async.waterfall(createGroupTasks, handler);
 	});
