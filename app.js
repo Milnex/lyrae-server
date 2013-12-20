@@ -195,6 +195,9 @@ app.get('/match/:uid', function(req, res) {
 	, 	function retrieveUidsAndMark (users, callback) {
 			console.log('users='+ JSON.stringify(users));
 
+			if (!users || users.length < 2)
+				return callback('Mis-match');
+
 			var tasks = [];
 			var uids = [];
 			async.each(users, function(user, end) {
@@ -211,8 +214,6 @@ app.get('/match/:uid', function(req, res) {
 			callback(null, uids);
 		}
 	,   function createGroup (uids, callback) {
-			if (uids.length === 0)
-				return callback('Mis-match');
 			// create a new group given a list of matched user
 			model.Group.create({users: uids}, function (err, group) {
 				if (err) return callback(err);
