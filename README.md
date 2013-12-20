@@ -6,26 +6,31 @@ API Server powered by Node.js
 ## GET /users ##
 **List all users**   
 
-## GET /user/:id ##
+## GET /user/:uid ##
 **Get an user data given :id**   
 
 ## POST /user ##
-**Create an user given :id & :name**   
+**Create an user given :uid & :name**   
 
-    id=<fbid>   
+    uid=<fbid>   
     name=<user name>   
     
-## POST /user/:id ##
-**Modify an user attribute given :id**   
+## POST /user/:uid ##
+**Modify an user attribute given :uid**   
 
     longitude=<longitude>   
     latitude=<latitude>   
     activity=<activity>   
     matching=<if request a matching: boolean>   
     
-## GET /match/:id ##
-**Match an user given :id by its activity**   
+## GET /match/:uid ##
+**Match an user given :uid by its activity**   
 
+    return a newly created group id :gid if matching any other users
 
+## GET /group/:gid ##
+**Query for a group given :gid**   
+
+    return a list of users in that group
 
 

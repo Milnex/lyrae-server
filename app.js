@@ -69,10 +69,10 @@ app.get('/users', function(req, res) {
 });
 
 /*
-GET /user/:id
+GET /user/:uid
 */
-app.get('/user/:id', function(req, res) {
-	var uid = req.params.id;
+app.get('/user/:uid', function(req, res) {
+	var uid = req.params.uid;
 	async.series([
 		function (callback) {
 			if (!(validator(uid).notNull() && validator(uid).notEmpty())) 
@@ -87,12 +87,12 @@ app.get('/user/:id', function(req, res) {
 
 /*
 POST /user
-id=<uid>
+uid=<uid>
 name=<name>
 */
 app.post('/user', function(req, res) {
 	/* TODO: if login */
-	var uid = req.body.id;
+	var uid = req.body.uid;
 	var name = req.body.name;
 	async.series([ 
 	    function(callback) {
@@ -112,14 +112,14 @@ app.post('/user', function(req, res) {
 });
 
 /*
-POST /user/:id
+POST /user/:uid
 longitude=<longitude>
 latitude=<latitude>
 activity=<activity>
 matching=<match>
 */
-app.post('/user/:id', function(req, res) {
-	var uid = req.params.id;
+app.post('/user/:uid', function(req, res) {
+	var uid = req.params.uid;
 	var lng = req.body.longitude;
 	var lat = req.body.latitude;
 	var activity = req.body.activity;
@@ -169,8 +169,8 @@ app.post('/user/:id', function(req, res) {
 	], renderResults(req, res));
 });
 
-app.get('/match/:id', function(req, res) {
-	var uid = req.params.id;
+app.get('/match/:uid', function(req, res) {
+	var uid = req.params.uid;
 
 	var handler = renderResults(req, res);
 
@@ -230,8 +230,8 @@ app.get('/match/:id', function(req, res) {
 	});
 });
 
-app.get('/group/:id', function(req, res) {
-	var gid = req.params.id;
+app.get('/group/:gid', function(req, res) {
+	var gid = req.params.gid;
 
 	var handler = renderResults(req, res);
 	if (!(validator(gid).notNull() && validator(gid).notEmpty()))
