@@ -234,7 +234,7 @@ app.get('/match/:uid', function(req, res) {
 
 		if (group) {
 			console.log('Group ' + group._id + ' contains ' + uid);
-			//return handler(null, [{gid: group._id}]);
+			return handler(null, [{gid: group._id}]);
 			/*
 			async.series([
 				function removeUserFromGroup (callback) {
