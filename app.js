@@ -6,8 +6,6 @@ var express = require('express')
 ,   sanitize = require('validator').sanitize
 ,   config = require('./config')
 ,   model = require('./model')
-//,   routes = require('./routes')
-//,   user = require('./routes/user')
 ;
 
 var app = express();
