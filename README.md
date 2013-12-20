@@ -3,23 +3,28 @@ Project Lyrae
 API Server powered by Node.js   
 
 
-** GET /users **  list all users   
+## GET /users ##
+**List all users**   
 
-** GET /user/:id ** Get an user given id
+## GET /user/:id ##
+**Get an user data given :id**   
 
-** GET /user/:id **  Get user 
+## POST /user ##
+**Create an user given :id & :name**   
 
-** POST /user **  Create an user given id & name   
     id=\<fbid\>   
     name=\<user name\>   
     
-** POST /user/:id **  Modify an user attribute   
+## POST /user/:id ##
+**Modify an user attribute given :id**   
+
     lng=\<longitude\>   
     lat=\<latitude\>   
     activity=\<activity\>   
     matching=\<boolean\>   
     
-** GET /match/:id ** Match an user by its activity
+## GET /match/:id ##
+**Match an user given :id by its activity**   
 
 
 
