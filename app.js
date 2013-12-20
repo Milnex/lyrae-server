@@ -180,14 +180,14 @@ app.get('/match/:uid', function(req, res) {
 
 	console.log('[GET] /match/' + uid + ': ');
 
-	var tasks = [
+	var createGroupTasks = [
 		function findUserById(callback) {
 
 			model.User.findOne({uid: uid}, callback);
 		}
 	,	function findUsersByActivityAndMatching (user, callback) {
 			if (!user)
-				return callback('Invalid uid - non exist: ' + uid);
+				return callback('Invalid uid - not exist: ' + uid);
 			var activity = user.activity;
 
 			console.log('activity='+activity);
@@ -224,13 +224,34 @@ app.get('/match/:uid', function(req, res) {
 		}
 	];
 
+
 	// check if uid already exists in a group
 	model.Group.findOne({users: {$in: [uid]}}, function (err, group) {
 		if (err) return handler(err);
 
-		if (group)
-			return handler(null, [{gid: group._id}]);
-		async.waterfall(tasks, handler);
+		if (group) {
+			console.log('Group ' + group._id + ' contains ' + uid);
+			//return handler(null, [{gid: group._id}]);
+			async.series([
+				function removeUserFromGroup (callback) {
+					model.Group.findOneAndUpdate({_id: group._id}, {$pull: {users: uid}}, function (err, group){
+						if (err) return callback('Remove user: ' + uid);
+
+						console.log('Successfully remove user ' + uid + ' from group: ' + group._id);
+						callback(null);
+					});
+				}
+			,	function removeAllGroupsLessThanTwo (callback) {
+					model.Group.find({}, {users: {$size: {$lt: 2}}}).remove(function (err, group) {
+						if (err) return callback('Remove group of size < 2');
+
+						console.log('Successfully remove all empty groups');
+						callback(null);
+					});
+				}
+            ]);
+		}
+		async.waterfall(createGroupTasks, handler);
 	});
 });
 
