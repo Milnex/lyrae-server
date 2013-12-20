@@ -50,7 +50,10 @@ app.get('/', function() {
 
 var renderResults = function(req, res) {
 	return function(err, results) {
-		if (err) return res.send({status: '[Error] ' + err});
+		if (err) {
+			console.log('[Error] ' + err);
+			return res.send({status: '[Error] ' + err});
+		}
 
 		res.send(results[0]);
 	};
