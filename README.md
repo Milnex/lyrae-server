@@ -12,16 +12,16 @@ API Server powered by Node.js
 ## POST /user ##
 **Create an user given :id & :name**   
 
-    id=\<fbid\>   
-    name=\<user name\>   
+    id=<fbid>   
+    name=<user name>   
     
 ## POST /user/:id ##
 **Modify an user attribute given :id**   
 
-    lng=\<longitude\>   
-    lat=\<latitude\>   
-    activity=\<activity\>   
-    matching=\<boolean\>   
+    lng=<longitude>   
+    lat=<latitude>   
+    activity=<activity>   
+    matching=<if request a matching: boolean>   
     
 ## GET /match/:id ##
 **Match an user given :id by its activity**   
